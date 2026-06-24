@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1B5E20">
+  <title>Presensi - Pondok Pesantren</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>Input Presensi</h1>
+        <div class="header-subtitle" id="headerDate"></div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="container">
+    <!-- Libur Banner (akan muncul jika hari libur) -->
+    <div id="liburBanner" class="libur-banner hidden">
+      <div class="libur-icon">&#128164;</div>
+      <div id="liburText">Hari ini libur</div>
+    </div>
+
+    <!-- Form Filter -->
+    <div class="card" id="filterCard">
+      <div class="card-title">
+        <span class="icon">&#128197;</span> Pilih Tanggal & Sesi
+      </div>
+      <div class="form-group">
+        <label for="tanggal">Tanggal</label>
+        <input type="date" id="tanggal" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Sesi</label>
+        <div class="filter-tabs" id="sesiTabs">
+          <button class="filter-tab active" data-sesi="Pagi">Pagi</button>
+          <button class="filter-tab" data-sesi="Malam">Malam</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Kelas</label>
+        <div class="filter-tabs" id="kelasTabs">
+          <button class="filter-tab active" data-kelas="A">Kelas A</button>
+          <button class="filter-tab" data-kelas="B">Kelas B</button>
+          <button class="filter-tab" data-kelas="C">Kelas C</button>
+          <button class="filter-tab" data-kelas="D">Kelas D</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Status -->
+    <div class="card" id="bulkCard" style="display: none;">
+      <div class="card-title">
+        <span class="icon">&#128296;</span> Atur Semua Status
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn hadir" onclick="setAllStatus('Hadir')">Semua Hadir</button>
+        <button class="bulk-btn izin" onclick="setAllStatus('Izin')">Semua Izin</button>
+        <button class="bulk-btn sakit" onclick="setAllStatus('Sakit')">Semua Sakit</button>
+        <button class="bulk-btn alfa" onclick="setAllStatus('Alfa')">Semua Alfa</button>
+      </div>
+    </div>
+
+    <!-- Daftar Presensi -->
+    <div id="presensiLoading" class="loading hidden">
+      <div class="spinner"></div>
+      <span>Memuat data santri...</span>
+    </div>
+
+    <div id="presensiList" class="presensi-list"></div>
+
+    <!-- Tombol Simpan -->
+    <div id="saveSection" class="mt-2 hidden">
+      <button class="btn btn-primary" id="btnSave" onclick="savePresensi()">
+        Simpan Presensi
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">&#127968;</span>
+      <span>Beranda</span>
+    </a>
+    <a href="presensi.html" class="nav-item active">
+      <span class="nav-icon">&#9997;</span>
+      <span>Presensi</span>
+    </a>
+    <a href="santri.html" class="nav-item">
+      <span class="nav-icon">&#128100;</span>
+      <span>Santri</span>
+    </a>
+    <a href="rekap.html" class="nav-item">
+      <span class="nav-icon">&#128203;</span>
+      <span>Rekap</span>
+    </a>
+    <a href="libur.html" class="nav-item">
+      <span class="nav-icon">&#128197;</span>
+      <span>Libur</span>
+    </a>
+  </nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/presensi.js"></script>
+</body>
+</html>

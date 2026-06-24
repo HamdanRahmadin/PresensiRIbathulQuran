@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1B5E20">
+  <title>Hari Libur - Pondok Pesantren</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>Hari Libur</h1>
+        <div class="header-subtitle">Kelola hari libur pesantren</div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="container">
+    <!-- Info Libur Mingguan -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">&#128197;</span> Libur Mingguan (Otomatis)
+      </div>
+      <div class="libur-item" style="border-left-color: var(--primary-lighter); margin-bottom: 8px;">
+        <div class="libur-info">
+          <div class="libur-date">Kamis Malam</div>
+          <div class="libur-desc">Libur mingguan tetap - sesi Malam tidak ada presensi</div>
+        </div>
+      </div>
+      <div class="libur-item" style="border-left-color: var(--primary-lighter);">
+        <div class="libur-info">
+          <div class="libur-date">Jumat Pagi</div>
+          <div class="libur-desc">Libur mingguan tetap - sesi Pagi tidak ada presensi</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tambah Libur Khusus -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">&#10133;</span> Tambah Libur Khusus
+      </div>
+      <form id="liburForm">
+        <div class="form-group">
+          <label for="liburTanggal">Tanggal</label>
+          <input type="date" id="liburTanggal" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="liburSesi">Sesi</label>
+          <select id="liburSesi" class="form-control" required>
+            <option value="Semua">Semua (Pagi & Malam)</option>
+            <option value="Pagi">Pagi saja</option>
+            <option value="Malam">Malam saja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="liburKeterangan">Keterangan</label>
+          <input type="text" id="liburKeterangan" class="form-control" placeholder="Contoh: Maulid Nabi, Liburan Semester..." required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btnAddLibur">
+          Tambah Hari Libur
+        </button>
+      </form>
+    </div>
+
+    <!-- Daftar Libur Khusus -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">&#128203;</span> Daftar Libur Khusus
+      </div>
+
+      <div id="liburLoading" class="loading">
+        <div class="spinner"></div>
+        <span>Memuat data...</span>
+      </div>
+
+      <div id="liburList"></div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Hapus -->
+  <div class="modal-overlay hidden" id="deleteModal">
+    <div class="modal">
+      <h2 class="modal-title">Konfirmasi Hapus</h2>
+      <p class="confirm-text">
+        Apakah Anda yakin ingin menghapus hari libur <span class="confirm-highlight" id="deleteInfo"></span>?
+      </p>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
+        <button class="btn btn-danger" id="btnDelete" onclick="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">&#127968;</span>
+      <span>Beranda</span>
+    </a>
+    <a href="presensi.html" class="nav-item">
+      <span class="nav-icon">&#9997;</span>
+      <span>Presensi</span>
+    </a>
+    <a href="santri.html" class="nav-item">
+      <span class="nav-icon">&#128100;</span>
+      <span>Santri</span>
+    </a>
+    <a href="rekap.html" class="nav-item">
+      <span class="nav-icon">&#128203;</span>
+      <span>Rekap</span>
+    </a>
+    <a href="libur.html" class="nav-item active">
+      <span class="nav-icon">&#128197;</span>
+      <span>Libur</span>
+    </a>
+  </nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/libur.js"></script>
+</body>
+</html>

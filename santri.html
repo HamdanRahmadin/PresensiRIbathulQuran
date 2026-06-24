@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1B5E20">
+  <title>Data Santri - Pondok Pesantren</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>Data Santri</h1>
+        <div class="header-subtitle">Kelola data santri pondok pesantren</div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="container">
+    <!-- Filter Kelas -->
+    <div class="filter-tabs mb-2">
+      <button class="filter-tab active" data-kelas="semua">Semua</button>
+      <button class="filter-tab" data-kelas="A">Kelas A</button>
+      <button class="filter-tab" data-kelas="B">Kelas B</button>
+      <button class="filter-tab" data-kelas="C">Kelas C</button>
+      <button class="filter-tab" data-kelas="D">Kelas D</button>
+    </div>
+
+    <!-- Tombol Tambah -->
+    <button class="btn btn-primary mb-2" onclick="showAddModal()">
+      + Tambah Santri
+    </button>
+
+    <!-- Jumlah Santri -->
+    <div class="date-info" id="santriCount">Memuat data...</div>
+
+    <!-- Loading -->
+    <div id="santriLoading" class="loading">
+      <div class="spinner"></div>
+      <span>Memuat data santri...</span>
+    </div>
+
+    <!-- Daftar Santri -->
+    <div id="santriList"></div>
+  </div>
+
+  <!-- Modal Tambah/Edit -->
+  <div class="modal-overlay hidden" id="santriModal">
+    <div class="modal">
+      <h2 class="modal-title" id="modalTitle">Tambah Santri</h2>
+      <form id="santriForm">
+        <div class="form-group">
+          <label for="inputNama">Nama Santri</label>
+          <input type="text" id="inputNama" class="form-control" placeholder="Masukkan nama santri" required>
+        </div>
+        <div class="form-group">
+          <label for="inputKelas">Kelas</label>
+          <select id="inputKelas" class="form-control" required>
+            <option value="A">Kelas A</option>
+            <option value="B">Kelas B</option>
+            <option value="C">Kelas C</option>
+            <option value="D">Kelas D</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Hapus -->
+  <div class="modal-overlay hidden" id="deleteModal">
+    <div class="modal">
+      <h2 class="modal-title">Konfirmasi Hapus</h2>
+      <p class="confirm-text">
+        Apakah Anda yakin ingin menghapus santri <span class="confirm-highlight" id="deleteNama"></span>?
+        <br><br>
+        Data presensi santri ini <strong>tidak akan</strong> ikut terhapus.
+      </p>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
+        <button class="btn btn-danger" id="btnDelete" onclick="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">&#127968;</span>
+      <span>Beranda</span>
+    </a>
+    <a href="presensi.html" class="nav-item">
+      <span class="nav-icon">&#9997;</span>
+      <span>Presensi</span>
+    </a>
+    <a href="santri.html" class="nav-item active">
+      <span class="nav-icon">&#128100;</span>
+      <span>Santri</span>
+    </a>
+    <a href="rekap.html" class="nav-item">
+      <span class="nav-icon">&#128203;</span>
+      <span>Rekap</span>
+    </a>
+    <a href="libur.html" class="nav-item">
+      <span class="nav-icon">&#128197;</span>
+      <span>Libur</span>
+    </a>
+  </nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/santri.js"></script>
+</body>
+</html>
