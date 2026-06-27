@@ -8,11 +8,16 @@ const API = {
     const url = new URL(CONFIG.API_URL);
     url.searchParams.append('action', action);
     for (const key in params) {
-      url.searchParams.append(key, params[key]);
+      if (params[key] !== undefined && params[key] !== null) {
+        url.searchParams.append(key, params[key]);
+      }
     }
 
     try {
       const response = await fetch(url.toString());
+      if (!response.ok) {
+        return { success: false, message: `Server error (${response.status})` };
+      }
       const data = await response.json();
       return data;
     } catch (error) {
@@ -23,15 +28,18 @@ const API = {
 
   // POST request
   async post(action, body = {}) {
-    body.action = action;
+    const payload = Object.assign({}, body, { action });
 
     try {
       const response = await fetch(CONFIG.API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
         redirect: 'follow'
       });
+      if (!response.ok) {
+        return { success: false, message: `Server error (${response.status})` };
+      }
       const data = await response.json();
       return data;
     } catch (error) {
@@ -40,9 +48,9 @@ const API = {
     }
   },
 
-  // Login
-  async login(password) {
-    return await this.get('login', { password });
+  // Login (menggunakan POST agar password tidak muncul di URL)
+  async login(username, password) {
+    return await this.post('login', { username, password });
   },
 
   // ---- SANTRI ----

@@ -38,6 +38,7 @@
 }
 
 html {
+  height: 100%;
   font-size: 16px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -46,8 +47,9 @@ body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text-dark);
-  min-height: 100vh;
-  padding-bottom: 80px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
   line-height: 1.5;
 }
 
@@ -80,6 +82,7 @@ a {
   min-height: 100vh;
   padding: 24px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  flex: 1;
 }
 
 .login-card {
@@ -92,16 +95,14 @@ a {
   text-align: center;
 }
 
-.login-icon {
-  width: 80px;
-  height: 80px;
-  background: var(--primary-bg);
+.login-logo {
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
+  display: block;
   margin: 0 auto 20px;
-  font-size: 36px;
+  box-shadow: var(--shadow);
 }
 
 .login-title {
@@ -160,6 +161,29 @@ a {
   background: rgba(255,255,255,0.3);
 }
 
+.btn-back {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: var(--white);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,0.3);
+}
+
 /* ---- Bottom Navigation ---- */
 .bottom-nav {
   position: fixed;
@@ -208,9 +232,11 @@ a {
 
 /* ---- Container ---- */
 .container {
+  width: 100%;
   padding: 16px;
   max-width: 600px;
   margin: 0 auto;
+  flex: 1;
 }
 
 /* ---- Cards ---- */
@@ -319,6 +345,26 @@ a {
 .action-btn .action-label {
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+/* Tombol utama Presensi */
+.btn-presensi {
+  background: var(--primary);
+  border-color: var(--primary);
+  min-width: 140px;
+  padding: 12px 12px;
+}
+
+.btn-presensi .action-label {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.btn-presensi:hover,
+.btn-presensi:active {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
 }
 
 /* ---- Forms ---- */
@@ -818,40 +864,6 @@ select.form-control {
   text-align: center;
 }
 
-/* ---- Bulk Actions ---- */
-.bulk-actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.bulk-btn {
-  padding: 6px 14px;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: 2px solid;
-  background: var(--white);
-  font-family: var(--font);
-  transition: var(--transition);
-}
-
-.bulk-btn.hadir { border-color: var(--primary-lighter); color: var(--primary); }
-.bulk-btn.izin { border-color: var(--info); color: var(--info); }
-.bulk-btn.sakit { border-color: var(--secondary); color: var(--warning); }
-.bulk-btn.alfa { border-color: var(--danger); color: var(--danger); }
-
-.bulk-btn:hover, .bulk-btn:active {
-  color: var(--white);
-}
-
-.bulk-btn.hadir:hover, .bulk-btn.hadir:active { background: var(--primary-lighter); }
-.bulk-btn.izin:hover, .bulk-btn.izin:active { background: var(--info); }
-.bulk-btn.sakit:hover, .bulk-btn.sakit:active { background: var(--secondary); }
-.bulk-btn.alfa:hover, .bulk-btn.alfa:active { background: var(--danger); }
-
 /* ---- Count Badge ---- */
 .count-badge {
   display: inline-flex;
@@ -934,3 +946,79 @@ select.form-control {
 .percentage-fill.high { background: var(--primary-lighter); }
 .percentage-fill.medium { background: var(--secondary); }
 .percentage-fill.low { background: var(--danger); }
+
+/* ---- Modal Detail Santri Alfa ---- */
+.modal-content {
+  background: var(--white);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+  line-height: 1;
+  padding: 0;
+}
+
+.modal-close:hover {
+  color: var(--text-dark);
+}
+
+.modal-body {
+  padding: 16px 20px;
+}
+
+.modal-sesi {
+  margin: 8px 0 4px;
+  color: var(--primary);
+  font-size: 0.85rem;
+}
+
+.modal-item {
+  padding: 6px 12px;
+  margin: 2px 0;
+  background: var(--primary-bg);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.modal-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+/* ---- Copyright Footer ---- */
+.footer-copyright {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  padding: 20px 16px 8px;
+  margin-top: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -13,8 +13,8 @@
 // ============================================================
 
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbz7ZhgaNv3nBBcT6K9GrHBzeg2Abv8U7pT7ArnFi2nUZMjELjoTdihU2JsO_qqlHbHheg/exec',
-  APP_NAME: 'Presensi Pondok Pesantren',
+  API_URL: 'https://script.google.com/macros/s/AKfycbxrsq2NSeCC40pDy2uTlZ1_jJR_ftltggJ5zPE1yvylw1hPgGd02hu4pY-QxWW-Zln3GQ/exec',
+  APP_NAME: 'Presensi Ribathul Qur\'an',
   KELAS: ['A', 'B', 'C', 'D'],
   SESI: ['Pagi', 'Malam'],
   STATUS: ['Hadir', 'Izin', 'Sakit', 'Alfa'],

@@ -10,10 +10,23 @@ let deleteTarget = { nama: '', kelas: '' };
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
+  if (!Auth.isAdmin()) {
+    // Redirect ke dashboard karena ustaz tidak boleh kelola data santri
+    window.location.href = 'dashboard.html';
+    return;
+  }
   initSantri();
 });
 
 function initSantri() {
+  // Setup click listener for back button
+  const btnBack = document.getElementById('btnBack');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
   // Setup filter tabs
   document.querySelectorAll('.filter-tabs .filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -23,6 +36,19 @@ function initSantri() {
       loadSantri();
     });
   });
+
+  // Setup click listeners
+  const btnAddSantri = document.getElementById('btnAddSantri');
+  if (btnAddSantri) btnAddSantri.addEventListener('click', showAddModal);
+
+  const btnCancelAdd = document.getElementById('btnCancelAdd');
+  if (btnCancelAdd) btnCancelAdd.addEventListener('click', closeModal);
+
+  const btnCancelDelete = document.getElementById('btnCancelDelete');
+  if (btnCancelDelete) btnCancelDelete.addEventListener('click', closeDeleteModal);
+
+  const btnDelete = document.getElementById('btnDelete');
+  if (btnDelete) btnDelete.addEventListener('click', confirmDelete);
 
   // Setup form
   document.getElementById('santriForm').addEventListener('submit', handleSubmit);
@@ -34,7 +60,8 @@ async function loadSantri() {
   document.getElementById('santriLoading').classList.remove('hidden');
   document.getElementById('santriList').innerHTML = '';
 
-  const result = await API.getSantri(currentFilter);
+  const kelas = currentFilter === 'semua' ? '' : currentFilter;
+  const result = await API.getSantri(kelas);
 
   document.getElementById('santriLoading').classList.add('hidden');
 
@@ -42,46 +69,68 @@ async function loadSantri() {
     document.getElementById('santriList').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#9888;</div>
-        <div class="empty-text">Gagal memuat data: ${result.message}</div>
+        <div class="empty-text">Gagal memuat data: ${escapeHtml(result.message)}</div>
       </div>
     `;
     return;
   }
 
-  const data = result.data;
+  const data = safeArray(result);
   document.getElementById('santriCount').textContent = `Total: ${data.length} santri`;
 
   if (data.length === 0) {
     document.getElementById('santriList').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#128100;</div>
-        <div class="empty-text">Belum ada data santri${currentFilter !== 'semua' ? ' di Kelas ' + currentFilter : ''}</div>
+        <div class="empty-text">Belum ada data santri${currentFilter !== 'semua' ? ' di Kelas ' + escapeHtml(currentFilter) : ''}</div>
       </div>
     `;
     return;
   }
 
-  let html = '';
+  const listEl = document.getElementById('santriList');
+  listEl.innerHTML = '';
+
   data.forEach(s => {
-    html += `
-      <div class="santri-item">
-        <div class="santri-info">
-          <div class="santri-name">${s.nama}</div>
-          <div class="santri-class">Kelas ${s.kelas}</div>
-        </div>
-        <div class="santri-actions">
-          <button class="btn-icon edit" onclick="showEditModal('${escapeQuote(s.nama)}', '${s.kelas}')" title="Edit">&#9998;</button>
-          <button class="btn-icon delete" onclick="showDeleteModal('${escapeQuote(s.nama)}', '${s.kelas}')" title="Hapus">&#128465;</button>
-        </div>
-      </div>
-    `;
+    const item = document.createElement('div');
+    item.className = 'santri-item';
+
+    const info = document.createElement('div');
+    info.className = 'santri-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'santri-name';
+    nameEl.textContent = s.nama;
+
+    const classEl = document.createElement('div');
+    classEl.className = 'santri-class';
+    classEl.textContent = `Kelas ${s.kelas}`;
+
+    info.appendChild(nameEl);
+    info.appendChild(classEl);
+
+    const actions = document.createElement('div');
+    actions.className = 'santri-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-icon edit';
+    editBtn.innerHTML = '&#9998;';
+    editBtn.title = 'Edit';
+    editBtn.addEventListener('click', () => showEditModal(s.nama, s.kelas));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-icon delete';
+    deleteBtn.innerHTML = '&#128465;';
+    deleteBtn.title = 'Hapus';
+    deleteBtn.addEventListener('click', () => showDeleteModal(s.nama, s.kelas));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+
+    item.appendChild(info);
+    item.appendChild(actions);
+    listEl.appendChild(item);
   });
-
-  document.getElementById('santriList').innerHTML = html;
-}
-
-function escapeQuote(str) {
-  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
 // ---- Modal Tambah ----
@@ -173,19 +222,4 @@ async function confirmDelete() {
   } else {
     showToast(result.message || 'Gagal menghapus data', 'error');
   }
-}
-
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-20px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
 }

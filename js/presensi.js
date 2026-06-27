@@ -6,6 +6,7 @@ let currentSesi = 'Pagi';
 let currentKelas = 'A';
 let santriList = [];
 let isLibur = false;
+let loadRequestId = 0; // untuk mendeteksi response basi (race condition)
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
@@ -17,6 +18,18 @@ function initPresensi() {
   const today = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('headerDate').textContent = today.toLocaleDateString('id-ID', options);
+
+  const btnBack = document.getElementById('btnBack');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
+  const btnSave = document.getElementById('btnSave');
+  if (btnSave) {
+    btnSave.addEventListener('click', savePresensi);
+  }
 
   const tanggalInput = document.getElementById('tanggal');
   tanggalInput.value = formatDate(today);
@@ -32,30 +45,51 @@ function initPresensi() {
     });
   });
 
-  // Setup kelas tabs
-  document.querySelectorAll('#kelasTabs .filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('#kelasTabs .filter-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentKelas = tab.dataset.kelas;
-      loadSantri();
+  // Setup kelas tabs berdasarkan hak akses
+  const allowedKelas = Auth.getAllowedKelas();
+  const kelasTabsContainer = document.getElementById('kelasTabs');
+
+  if (allowedKelas !== 'all') {
+    // Jika ustaz, set kelas default ke kelasnya sendiri dan sembunyikan kelas lain
+    currentKelas = allowedKelas;
+    document.querySelectorAll('#kelasTabs .filter-tab').forEach(tab => {
+      if (tab.dataset.kelas === allowedKelas) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.add('hidden'); // Sembunyikan kelas lain
+      }
     });
-  });
+  } else {
+    // Jika admin, biarkan semua kelas diakses
+    document.querySelectorAll('#kelasTabs .filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#kelasTabs .filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentKelas = tab.dataset.kelas;
+        loadSantri();
+      });
+    });
+  }
 
   loadSantri();
 }
 
 async function loadSantri() {
   const tanggal = document.getElementById('tanggal').value;
+  if (!tanggal) return;
+
+  // Increment request ID untuk mendeteksi response basi
+  const thisRequestId = ++loadRequestId;
 
   document.getElementById('presensiLoading').classList.remove('hidden');
   document.getElementById('presensiList').innerHTML = '';
   document.getElementById('saveSection').classList.add('hidden');
-  document.getElementById('bulkCard').style.display = 'none';
   document.getElementById('liburBanner').classList.add('hidden');
 
   // Cek apakah hari libur
   const liburResult = await API.checkLibur(tanggal, currentSesi);
+  if (thisRequestId !== loadRequestId) return; // response basi, abaikan
+
   if (liburResult.success && liburResult.libur) {
     isLibur = true;
     document.getElementById('liburBanner').classList.remove('hidden');
@@ -65,70 +99,99 @@ async function loadSantri() {
   }
   isLibur = false;
 
-  // Ambil data santri berdasarkan kelas
-  const santriResult = await API.getSantri(currentKelas);
-
-  // Ambil data presensi yang sudah ada (jika edit)
-  const presensiResult = await API.getPresensi(tanggal, currentSesi, currentKelas);
+  // Ambil data santri dan presensi secara parallel
+  const [santriResult, presensiResult] = await Promise.all([
+    API.getSantri(currentKelas),
+    API.getPresensi(tanggal, currentSesi, currentKelas)
+  ]);
+  if (thisRequestId !== loadRequestId) return; // response basi, abaikan
 
   document.getElementById('presensiLoading').classList.add('hidden');
 
-  if (!santriResult.success || santriResult.data.length === 0) {
+  if (!santriResult.success) {
+    document.getElementById('presensiList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#9888;</div>
+        <div class="empty-text">Gagal memuat data santri: ${escapeHtml(santriResult.message || '')}</div>
+      </div>
+    `;
+    showToast(santriResult.message || 'Gagal memuat data santri', 'error');
+    return;
+  }
+
+  const santriData = safeArray(santriResult);
+
+  if (santriData.length === 0) {
     document.getElementById('presensiList').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#128100;</div>
-        <div class="empty-text">Belum ada santri di Kelas ${currentKelas}</div>
+        <div class="empty-text">Belum ada santri di Kelas ${escapeHtml(currentKelas)}</div>
       </div>
     `;
     return;
   }
 
-  santriList = santriResult.data;
+  santriList = santriData;
 
   // Buat mapping presensi yang sudah ada
   const existingPresensi = {};
-  if (presensiResult.success && presensiResult.data.length > 0) {
-    presensiResult.data.forEach(p => {
-      existingPresensi[p.nama] = p.status;
-    });
-  }
-
-  // Render daftar santri
-  let html = '';
-  santriList.forEach((s, index) => {
-    const existingStatus = existingPresensi[s.nama] || 'Hadir';
-    const statusClass = 'status-' + existingStatus.toLowerCase();
-
-    html += `
-      <div class="presensi-item">
-        <div class="santri-info">
-          <div class="santri-name">${s.nama}</div>
-          <div class="santri-class">Kelas ${s.kelas}</div>
-        </div>
-        <select class="status-select ${statusClass}" data-index="${index}" onchange="updateStatusColor(this)">
-          <option value="Hadir" ${existingStatus === 'Hadir' ? 'selected' : ''}>Hadir</option>
-          <option value="Izin" ${existingStatus === 'Izin' ? 'selected' : ''}>Izin</option>
-          <option value="Sakit" ${existingStatus === 'Sakit' ? 'selected' : ''}>Sakit</option>
-          <option value="Alfa" ${existingStatus === 'Alfa' ? 'selected' : ''}>Alfa</option>
-        </select>
-      </div>
-    `;
+  const presensiData = safeArray(presensiResult);
+  presensiData.forEach(p => {
+    existingPresensi[p.nama] = p.status;
   });
 
-  document.getElementById('presensiList').innerHTML = html;
+  // Render daftar santri menggunakan DOM API (aman dari XSS)
+  const listEl = document.getElementById('presensiList');
+  listEl.innerHTML = '';
+
+  santriList.forEach((s, index) => {
+    const existingStatus = existingPresensi[s.nama] || 'Hadir';
+    // Validasi status terhadap CONFIG
+    const validStatus = CONFIG.STATUS.includes(existingStatus) ? existingStatus : 'Hadir';
+    const statusClass = 'status-' + validStatus.toLowerCase();
+
+    const item = document.createElement('div');
+    item.className = 'presensi-item';
+
+    const info = document.createElement('div');
+    info.className = 'santri-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'santri-name';
+    nameEl.textContent = s.nama;
+
+    const classEl = document.createElement('div');
+    classEl.className = 'santri-class';
+    classEl.textContent = `Kelas ${s.kelas}`;
+
+    info.appendChild(nameEl);
+    info.appendChild(classEl);
+
+    const select = document.createElement('select');
+    select.className = `status-select ${statusClass}`;
+    select.dataset.index = index;
+    select.addEventListener('change', function() {
+      updateStatusColor(this);
+    });
+
+    CONFIG.STATUS.forEach(status => {
+      const option = document.createElement('option');
+      option.value = status;
+      option.textContent = status;
+      if (status === validStatus) option.selected = true;
+      select.appendChild(option);
+    });
+
+    item.appendChild(info);
+    item.appendChild(select);
+    listEl.appendChild(item);
+  });
+
   document.getElementById('saveSection').classList.remove('hidden');
-  document.getElementById('bulkCard').style.display = 'block';
-}
+} // end loadSantri
 
 function updateStatusColor(selectEl) {
   selectEl.className = 'status-select status-' + selectEl.value.toLowerCase();
-}
-
-function setAllStatus(status) {
-  document.querySelectorAll('.status-select').forEach(sel => {
-    sel.value = status;
-    updateStatusColor(sel);
-  });
 }
 
 async function savePresensi() {
@@ -150,11 +213,13 @@ async function savePresensi() {
 
   const presensi = [];
   document.querySelectorAll('.status-select').forEach((sel, index) => {
-    presensi.push({
-      nama: santriList[index].nama,
-      kelas: santriList[index].kelas,
-      status: sel.value
-    });
+    if (index < santriList.length) {
+      presensi.push({
+        nama: santriList[index].nama,
+        kelas: santriList[index].kelas,
+        status: sel.value
+      });
+    }
   });
 
   const result = await API.savePresensi(tanggal, currentSesi, presensi);
@@ -167,26 +232,4 @@ async function savePresensi() {
   } else {
     showToast(result.message || 'Gagal menyimpan presensi', 'error');
   }
-}
-
-function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-20px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
 }

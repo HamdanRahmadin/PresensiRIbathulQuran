@@ -6,12 +6,36 @@ let deleteLiburTarget = { tanggal: '', sesi: '' };
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
+  if (!Auth.isAdmin()) {
+    // Redirect ke dashboard karena ustaz tidak boleh kelola hari libur
+    window.location.href = 'dashboard.html';
+    return;
+  }
   initLibur();
 });
 
 function initLibur() {
+  // Setup click listener for back button
+  const btnBack = document.getElementById('btnBack');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
   // Set default tanggal ke hari ini
   document.getElementById('liburTanggal').value = formatDate(new Date());
+
+  // Setup click listeners
+  const btnCancelDeleteLibur = document.getElementById('btnCancelDeleteLibur');
+  if (btnCancelDeleteLibur) {
+    btnCancelDeleteLibur.addEventListener('click', closeDeleteModal);
+  }
+
+  const btnDelete = document.getElementById('btnDelete');
+  if (btnDelete) {
+    btnDelete.addEventListener('click', confirmDelete);
+  }
 
   // Setup form
   document.getElementById('liburForm').addEventListener('submit', handleAddLibur);
@@ -31,13 +55,13 @@ async function loadLibur() {
     document.getElementById('liburList').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#9888;</div>
-        <div class="empty-text">Gagal memuat data: ${result.message}</div>
+        <div class="empty-text">Gagal memuat data: ${escapeHtml(result.message)}</div>
       </div>
     `;
     return;
   }
 
-  const data = result.data;
+  const data = safeArray(result);
 
   if (data.length === 0) {
     document.getElementById('liburList').innerHTML = `
@@ -49,24 +73,45 @@ async function loadLibur() {
     return;
   }
 
-  let html = '';
+  const listEl = document.getElementById('liburList');
+  listEl.innerHTML = '';
+
   data.forEach(l => {
-    const displayDate = formatDisplayDate(l.tanggal);
+    const displayDate = formatDisplayDate(l.tanggal, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const sesiText = l.sesi === 'Semua' ? 'Pagi & Malam' : 'Sesi ' + l.sesi;
 
-    html += `
-      <div class="libur-item">
-        <div class="libur-info">
-          <div class="libur-date">${displayDate}</div>
-          <div class="libur-sesi">${sesiText}</div>
-          <div class="libur-desc">${l.keterangan}</div>
-        </div>
-        <button class="btn-icon delete" onclick="showDeleteModal('${l.tanggal}', '${l.sesi}', '${escapeQuote(l.keterangan)}')" title="Hapus">&#128465;</button>
-      </div>
-    `;
-  });
+    const item = document.createElement('div');
+    item.className = 'libur-item';
 
-  document.getElementById('liburList').innerHTML = html;
+    const info = document.createElement('div');
+    info.className = 'libur-info';
+
+    const dateEl = document.createElement('div');
+    dateEl.className = 'libur-date';
+    dateEl.textContent = displayDate;
+
+    const sesiEl = document.createElement('div');
+    sesiEl.className = 'libur-sesi';
+    sesiEl.textContent = sesiText;
+
+    const descEl = document.createElement('div');
+    descEl.className = 'libur-desc';
+    descEl.textContent = l.keterangan;
+
+    info.appendChild(dateEl);
+    info.appendChild(sesiEl);
+    info.appendChild(descEl);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-icon delete';
+    deleteBtn.innerHTML = '&#128465;';
+    deleteBtn.title = 'Hapus';
+    deleteBtn.addEventListener('click', () => showDeleteModal(l.tanggal, l.sesi, l.keterangan));
+
+    item.appendChild(info);
+    item.appendChild(deleteBtn);
+    listEl.appendChild(item);
+  });
 }
 
 async function handleAddLibur(e) {
@@ -101,7 +146,7 @@ async function handleAddLibur(e) {
 
 function showDeleteModal(tanggal, sesi, keterangan) {
   deleteLiburTarget = { tanggal, sesi };
-  const displayDate = formatDisplayDate(tanggal);
+  const displayDate = formatDisplayDate(tanggal, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   document.getElementById('deleteInfo').textContent = `${displayDate} - ${keterangan}`;
   document.getElementById('deleteModal').classList.remove('hidden');
 }
@@ -127,36 +172,4 @@ async function confirmDelete() {
   } else {
     showToast(result.message || 'Gagal menghapus', 'error');
   }
-}
-
-function escapeQuote(str) {
-  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
-}
-
-function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function formatDisplayDate(dateStr) {
-  const date = new Date(dateStr + 'T00:00:00');
-  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  return date.toLocaleDateString('id-ID', options);
-}
-
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-20px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
 }

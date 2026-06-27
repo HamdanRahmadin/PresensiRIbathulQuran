@@ -3,13 +3,26 @@
 // ============================================================
 
 let rekapKelas = 'semua';
+let currentRekapData = []; // Untuk menyimpan data ekspor Excel
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
+  if (!Auth.isAdmin()) {
+    window.location.href = 'dashboard.html';
+    return;
+  }
   initRekap();
 });
 
 function initRekap() {
+  // Setup click listener for back button
+  const btnBack = document.getElementById('btnBack');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
   // Set default tanggal: awal bulan ini s/d hari ini
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -17,7 +30,7 @@ function initRekap() {
   document.getElementById('tglMulai').value = formatDate(firstDay);
   document.getElementById('tglAkhir').value = formatDate(today);
 
-  // Setup kelas filter
+  // Setup kelas filter untuk admin
   document.querySelectorAll('#kelasFilter .filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('#kelasFilter .filter-tab').forEach(t => t.classList.remove('active'));
@@ -25,6 +38,17 @@ function initRekap() {
       rekapKelas = tab.dataset.kelas;
     });
   });
+
+  // Setup click listeners
+  const btnShowRekap = document.getElementById('btnShowRekap');
+  if (btnShowRekap) {
+    btnShowRekap.addEventListener('click', loadRekap);
+  }
+
+  const btnExport = document.getElementById('btnExport');
+  if (btnExport) {
+    btnExport.addEventListener('click', exportToExcel);
+  }
 }
 
 async function loadRekap() {
@@ -46,23 +70,25 @@ async function loadRekap() {
   document.getElementById('rekapContent').innerHTML = '';
   document.getElementById('rekapStats').classList.add('hidden');
 
-  const result = await API.getRekap(tglMulai, tglAkhir, rekapKelas, filterNama);
+  const kelas = rekapKelas === 'semua' ? '' : rekapKelas;
+  const result = await API.getRekap(tglMulai, tglAkhir, kelas, filterNama);
 
   document.getElementById('rekapLoading').classList.add('hidden');
+  document.getElementById('btnExport').classList.add('hidden');
 
   if (!result.success) {
     document.getElementById('rekapContent').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#9888;</div>
-        <div class="empty-text">Gagal memuat rekap: ${result.message}</div>
+        <div class="empty-text">Gagal memuat rekap: ${escapeHtml(result.message)}</div>
       </div>
     `;
     return;
   }
 
-  const data = result.data;
+  const rawData = safeArray(result);
 
-  if (data.length === 0) {
+  if (rawData.length === 0) {
     document.getElementById('rekapContent').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">&#128203;</div>
@@ -72,9 +98,39 @@ async function loadRekap() {
     return;
   }
 
-  // Hitung total statistik
+  // Lakukan perhitungan ulang berdasarkan kriteria user:
+  // - Total Sesi = Hadir + Izin + Sakit + Alfa
+  // - Total Hadir = Hadir + Izin + Sakit
+  // - Persentase = (Total Hadir / Total Sesi) * 100%
+  currentRekapData = rawData.map(r => {
+    const hadir = Number(r.hadir || 0);
+    const izin = Number(r.izin || 0);
+    const sakit = Number(r.sakit || 0);
+    const alfa = Number(r.alfa || 0);
+
+    const totalSesi = hadir + izin + sakit + alfa;
+    const totalHadir = hadir + izin + sakit;
+    const persentase = totalSesi > 0 ? Math.round((totalHadir / totalSesi) * 100) : 0;
+
+    return {
+      nama: r.nama,
+      kelas: r.kelas,
+      hadir,
+      izin,
+      sakit,
+      alfa,
+      totalSesi,
+      totalHadir,
+      persentase
+    };
+  });
+
+  // Tampilkan tombol export
+  document.getElementById('btnExport').classList.remove('hidden');
+
+  // Hitung total statistik ringkasan
   let totalHadir = 0, totalIzin = 0, totalSakit = 0, totalAlfa = 0;
-  data.forEach(r => {
+  currentRekapData.forEach(r => {
     totalHadir += r.hadir;
     totalIzin += r.izin;
     totalSakit += r.sakit;
@@ -87,86 +143,158 @@ async function loadRekap() {
   document.getElementById('rStatAlfa').textContent = totalAlfa;
   document.getElementById('rekapStats').classList.remove('hidden');
 
-  // Render tabel
-  let html = `
-    <div class="card">
-      <div class="card-title">
-        <span class="icon">&#128203;</span> Detail Rekap
-        <span class="count-badge">${data.length} santri</span>
-      </div>
-      <div class="date-info mb-2">
-        ${formatDisplayDate(tglMulai)} s/d ${formatDisplayDate(tglAkhir)}
-      </div>
-      <div class="rekap-table-container">
-        <table class="rekap-table">
-          <thead>
-            <tr>
-              <th>Nama</th>
-              <th>Kelas</th>
-              <th>Hadir</th>
-              <th>Izin</th>
-              <th>Sakit</th>
-              <th>Alfa</th>
-              <th>%</th>
-            </tr>
-          </thead>
-          <tbody>
-  `;
+  // Render tabel menggunakan DOM API
+  const card = document.createElement('div');
+  card.className = 'card';
 
-  data.forEach(r => {
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'card-title';
+  titleDiv.innerHTML = `<span class="icon">&#128203;</span> Detail Rekap <span class="count-badge">${currentRekapData.length} santri</span>`;
+
+  const dateInfo = document.createElement('div');
+  dateInfo.className = 'date-info mb-2';
+  dateInfo.textContent = `${formatDisplayDate(tglMulai)} s/d ${formatDisplayDate(tglAkhir)}`;
+
+  const tableContainer = document.createElement('div');
+  tableContainer.className = 'rekap-table-container';
+
+  const table = document.createElement('table');
+  table.className = 'rekap-table';
+
+  // Table header
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Nama', 'Kelas', 'Total Sesi', 'Hadir', 'Izin', 'Sakit', 'Alfa', 'Total Hadir', '%'].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  // Table body
+  const tbody = document.createElement('tbody');
+  currentRekapData.forEach(r => {
+    const row = document.createElement('tr');
     const pctClass = r.persentase >= 80 ? 'high' : (r.persentase >= 60 ? 'medium' : 'low');
-    html += `
-      <tr>
-        <td>${r.nama}</td>
-        <td>${r.kelas}</td>
-        <td><span class="badge badge-hadir">${r.hadir}</span></td>
-        <td><span class="badge badge-izin">${r.izin}</span></td>
-        <td><span class="badge badge-sakit">${r.sakit}</span></td>
-        <td><span class="badge badge-alfa">${r.alfa}</span></td>
-        <td>
-          <strong>${r.persentase}%</strong>
-          <div class="percentage-bar">
-            <div class="percentage-fill ${pctClass}" style="width: ${r.persentase}%"></div>
-          </div>
-        </td>
-      </tr>
-    `;
+
+    // Nama
+    const tdNama = document.createElement('td');
+    tdNama.textContent = r.nama || '';
+    row.appendChild(tdNama);
+
+    // Kelas
+    const tdKelas = document.createElement('td');
+    tdKelas.textContent = r.kelas || '';
+    row.appendChild(tdKelas);
+
+    // Total Sesi
+    const tdAktif = document.createElement('td');
+    tdAktif.textContent = r.totalSesi;
+    row.appendChild(tdAktif);
+
+    // Hadir, Izin, Sakit, Alfa
+    [
+      { val: r.hadir, cls: 'badge-hadir' },
+      { val: r.izin, cls: 'badge-izin' },
+      { val: r.sakit, cls: 'badge-sakit' },
+      { val: r.alfa, cls: 'badge-alfa' }
+    ].forEach(item => {
+      const td = document.createElement('td');
+      const badge = document.createElement('span');
+      badge.className = `badge ${item.cls}`;
+      badge.textContent = item.val;
+      td.appendChild(badge);
+      row.appendChild(td);
+    });
+
+    // Total Hadir
+    const tdTotal = document.createElement('td');
+    tdTotal.innerHTML = `<strong>${r.totalHadir}</strong>`;
+    row.appendChild(tdTotal);
+
+    // Persentase
+    const tdPct = document.createElement('td');
+    const strong = document.createElement('strong');
+    strong.textContent = `${r.persentase}%`;
+    tdPct.appendChild(strong);
+
+    const bar = document.createElement('div');
+    bar.className = 'percentage-bar';
+    const fill = document.createElement('div');
+    fill.className = `percentage-fill ${pctClass}`;
+    fill.style.width = `${Math.min(Math.max(r.persentase, 0), 100)}%`;
+    bar.appendChild(fill);
+    tdPct.appendChild(bar);
+
+    row.appendChild(tdPct);
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+
+  tableContainer.appendChild(table);
+  card.appendChild(titleDiv);
+  card.appendChild(dateInfo);
+  card.appendChild(tableContainer);
+
+  document.getElementById('rekapContent').innerHTML = '';
+  document.getElementById('rekapContent').appendChild(card);
+}
+
+/**
+ * Ekspor data ke format Excel (.xlsx) menggunakan SheetJS
+ */
+function exportToExcel() {
+  if (currentRekapData.length === 0) {
+    showToast('Tidak ada data untuk diekspor', 'error');
+    return;
+  }
+
+  const tglMulai = document.getElementById('tglMulai').value;
+  const tglAkhir = document.getElementById('tglAkhir').value;
+
+  // Format data untuk Excel
+  const excelRows = currentRekapData.map((r, index) => {
+    return {
+      'No': index + 1,
+      'Nama Santri': r.nama,
+      'Kelas': r.kelas,
+      'Total Sesi': r.totalSesi,
+      'Hadir': r.hadir,
+      'Izin': r.izin,
+      'Sakit': r.sakit,
+      'Alfa': r.alfa,
+      'Total Hadir': r.totalHadir,
+      'Persentase Kehadiran (%)': r.persentase
+    };
   });
 
-  html += `
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+  // Buat workbook & worksheet
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(excelRows);
 
-  document.getElementById('rekapContent').innerHTML = html;
-}
+  // Set lebar kolom agar rapi
+  const wscols = [
+    { wch: 5 },  // No
+    { wch: 30 }, // Nama
+    { wch: 10 }, // Kelas
+    { wch: 15 }, // Total Sesi
+    { wch: 8 },  // Hadir
+    { wch: 8 },  // Izin
+    { wch: 8 },  // Sakit
+    { wch: 8 },  // Alfa
+    { wch: 15 }, // Total Hadir
+    { wch: 22 }  // Persentase
+  ];
+  ws['!cols'] = wscols;
 
-function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
+  // Tambahkan worksheet ke workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
 
-function formatDisplayDate(dateStr) {
-  const date = new Date(dateStr + 'T00:00:00');
-  const options = { day: 'numeric', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('id-ID', options);
-}
+  // Nama file: Rekap_Presensi_YYYYMMDD_to_YYYYMMDD.xlsx
+  const filename = `Rekap_Presensi_${tglMulai.replace(/-/g, '')}_ke_${tglAkhir.replace(/-/g, '')}.xlsx`;
 
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-20px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  // Download file
+  XLSX.writeFile(wb, filename);
+  showToast('Rekap Excel berhasil diunduh!', 'success');
 }

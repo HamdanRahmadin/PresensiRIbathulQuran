@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1B5E20">
-  <title>Dashboard - Presensi Pondok Pesantren</title>
+  <title>Dashboard - Presensi Ribathul Qur'an</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,10 +13,10 @@
   <div class="header">
     <div class="header-top">
       <div>
-        <h1>Presensi Pesantren</h1>
+        <h1>Presensi Ribathul Qur'an</h1>
         <div class="header-subtitle" id="headerDate"></div>
       </div>
-      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+      <button class="btn-logout">Keluar</button>
     </div>
   </div>
 
@@ -31,6 +32,11 @@
         <span>Memuat data...</span>
       </div>
       <div id="statsContent" class="hidden">
+        <div class="filter-tabs" id="sesiStatsTabs">
+          <button class="filter-tab active" data-sesi="semua">Semua</button>
+          <button class="filter-tab" data-sesi="Pagi">Pagi</button>
+          <button class="filter-tab" data-sesi="Malam">Malam</button>
+        </div>
         <div class="stats-grid">
           <div class="stat-card hadir">
             <div class="stat-number" id="statHadir">0</div>
@@ -49,7 +55,38 @@
             <div class="stat-label">Alfa</div>
           </div>
         </div>
+        <div id="chartContainer" class="hidden" style="max-width: 280px; margin: 16px auto 16px;">
+          <canvas id="todayChart"></canvas>
+        </div>
         <div class="date-info" id="presensiInfo">Belum ada presensi hari ini</div>
+      </div>
+    </div>
+
+    <!-- Grafik Mingguan -->
+    <div class="card" id="weeklyCard">
+      <div class="card-title">
+        <span class="icon">&#128202;</span> Grafik Kehadiran 3 Hari Terakhir
+      </div>
+      <div id="weeklyLoading" class="loading">
+        <div class="spinner"></div>
+        <span>Memuat data...</span>
+      </div>
+      <div id="weeklyChartContainer" class="hidden" style="max-width: 100%; margin: 0 auto;">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+      <div id="weeklyEmptyState" class="date-info hidden" style="text-align: center; margin-top: 12px;">
+        Belum ada data presensi 3 hari terakhir
+      </div>
+    </div>
+
+    <!-- Modal Detail Santri Alfa -->
+    <div id="alfaModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title" id="alfaModalTitle">Santri Tidak Hadir</span>
+          <button class="modal-close" id="closeAlfaBtn">&times;</button>
+        </div>
+        <div class="modal-body" id="alfaModalBody"></div>
       </div>
     </div>
 
@@ -59,9 +96,8 @@
         <span class="icon">&#9889;</span> Menu Cepat
       </div>
       <div class="quick-actions">
-        <a href="presensi.html" class="action-btn">
-          <div class="action-icon">&#9997;</div>
-          <span class="action-label">Presensi</span>
+        <a href="presensi.html" class="action-btn btn-presensi">
+          <span class="action-label">Input Presensi</span>
         </a>
         <a href="santri.html" class="action-btn">
           <div class="action-icon">&#128100;</div>
@@ -78,6 +114,8 @@
       </div>
     </div>
   </div>
+
+  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
@@ -103,9 +141,14 @@
     </a>
   </nav>
 
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

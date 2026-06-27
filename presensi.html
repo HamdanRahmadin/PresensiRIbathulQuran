@@ -4,18 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1B5E20">
-  <title>Presensi - Pondok Pesantren</title>
+  <title>Presensi - Ribathul Qur'an</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <!-- Header -->
   <div class="header">
     <div class="header-top">
+      <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
       <div>
-        <h1>Input Presensi</h1>
+        <h1>Presensi Ribathul Qur'an</h1>
         <div class="header-subtitle" id="headerDate"></div>
       </div>
-      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+      <button class="btn-logout">Keluar</button>
     </div>
   </div>
 
@@ -54,19 +56,6 @@
       </div>
     </div>
 
-    <!-- Bulk Status -->
-    <div class="card" id="bulkCard" style="display: none;">
-      <div class="card-title">
-        <span class="icon">&#128296;</span> Atur Semua Status
-      </div>
-      <div class="bulk-actions">
-        <button class="bulk-btn hadir" onclick="setAllStatus('Hadir')">Semua Hadir</button>
-        <button class="bulk-btn izin" onclick="setAllStatus('Izin')">Semua Izin</button>
-        <button class="bulk-btn sakit" onclick="setAllStatus('Sakit')">Semua Sakit</button>
-        <button class="bulk-btn alfa" onclick="setAllStatus('Alfa')">Semua Alfa</button>
-      </div>
-    </div>
-
     <!-- Daftar Presensi -->
     <div id="presensiLoading" class="loading hidden">
       <div class="spinner"></div>
@@ -77,14 +66,16 @@
 
     <!-- Tombol Simpan -->
     <div id="saveSection" class="mt-2 hidden">
-      <button class="btn btn-primary" id="btnSave" onclick="savePresensi()">
+      <button class="btn btn-primary" id="btnSave">
         Simpan Presensi
       </button>
     </div>
   </div>
 
   <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer">  </div>
+
+  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
@@ -113,6 +104,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
   <script src="js/presensi.js"></script>
 </body>
 </html>

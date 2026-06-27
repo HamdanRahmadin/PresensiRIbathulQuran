@@ -4,18 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1B5E20">
-  <title>Hari Libur - Pondok Pesantren</title>
+  <title>Hari Libur - Ribathul Qur'an</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <!-- Header -->
   <div class="header">
     <div class="header-top">
+      <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
       <div>
-        <h1>Hari Libur</h1>
+        <h1>Hari Libur - Ribathul Qur'an</h1>
         <div class="header-subtitle">Kelola hari libur pesantren</div>
       </div>
-      <button class="btn-logout" onclick="Auth.logout()">Keluar</button>
+      <button class="btn-logout">Keluar</button>
     </div>
   </div>
 
@@ -91,14 +93,16 @@
         Apakah Anda yakin ingin menghapus hari libur <span class="confirm-highlight" id="deleteInfo"></span>?
       </p>
       <div class="btn-group">
-        <button class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
-        <button class="btn btn-danger" id="btnDelete" onclick="confirmDelete()">Hapus</button>
+        <button class="btn btn-secondary" id="btnCancelDeleteLibur">Batal</button>
+        <button class="btn btn-danger" id="btnDelete">Hapus</button>
       </div>
     </div>
   </div>
 
   <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer">  </div>
+
+  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
@@ -127,6 +131,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
   <script src="js/libur.js"></script>
 </body>
 </html>
