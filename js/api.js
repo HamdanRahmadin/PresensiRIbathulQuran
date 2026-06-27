@@ -53,6 +53,36 @@ const API = {
     return await this.post('login', { username, password });
   },
 
+  // ---- KELAS ----
+  async getKelas() {
+    return await this.get('getKelas');
+  },
+  
+  async addKelas(namaKelas) {
+    return await this.post('addKelas', { namaKelas });
+  },
+  
+  async deleteKelas(namaKelas) {
+    return await this.post('deleteKelas', { namaKelas });
+  },
+
+  // ---- USER / AKUN ----
+  async getUsers() {
+    return await this.get('getUsers');
+  },
+  
+  async addUser(username, password, role, kelas) {
+    return await this.post('addUser', { username, password, role, kelas });
+  },
+  
+  async editUser(oldUsername, username, password, role, kelas) {
+    return await this.post('editUser', { oldUsername, username, password, role, kelas });
+  },
+  
+  async deleteUser(username) {
+    return await this.post('deleteUser', { username });
+  },
+
   // ---- SANTRI ----
   async getSantri(kelas = '') {
     return await this.get('getSantri', { kelas });

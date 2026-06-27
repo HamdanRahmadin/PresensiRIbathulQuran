@@ -9,137 +9,152 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <div>
-        <h1>Presensi Ribathul Qur'an</h1>
-        <div class="header-subtitle" id="headerDate"></div>
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Ribathul Qur'an</h2>
+      <button class="btn-close-sidebar" id="btnCloseSidebar">&times;</button>
+    </div>
+    <div class="sidebar-menu">
+      <a href="dashboard.html" class="nav-item active">
+        <span class="nav-icon">&#127968;</span>
+        <span>Beranda</span>
+      </a>
+      <a href="presensi.html" class="nav-item">
+        <span class="nav-icon">&#9997;</span>
+        <span>Presensi</span>
+      </a>
+      <a href="santri.html" class="nav-item">
+        <span class="nav-icon">&#128100;</span>
+        <span>Santri</span>
+      </a>
+      <a href="rekap.html" class="nav-item">
+        <span class="nav-icon">&#128203;</span>
+        <span>Rekap</span>
+      </a>
+      <a href="libur.html" class="nav-item">
+        <span class="nav-icon">&#128197;</span>
+        <span>Hari Libur</span>
+      </a>
+      <a href="kelas.html" class="nav-item">
+        <span class="nav-icon">&#127979;</span>
+        <span>Kelola Kelas</span>
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon">&#128274;</span>
+        <span>Kelola Akun</span>
+      </a>
+    </div>
+  </aside>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-top">
+          <div class="header-left">
+            <button class="btn-menu" id="btnMenu">&#9776;</button>
+            <div>
+              <h1>Presensi Ribathul Qur'an</h1>
+              <div class="header-subtitle" id="headerDate"></div>
+            </div>
+          </div>
+          <button class="btn-logout">Keluar</button>
+        </div>
       </div>
-      <button class="btn-logout">Keluar</button>
+
+      <div class="container">
+        <!-- Dashboard Grid (Desktop) -->
+        <div class="dashboard-grid">
+          
+          <!-- Statistik Hari Ini (Kiri) -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon">&#128202;</span> Statistik Hari Ini
+            </div>
+            <div id="statsLoading" class="loading">
+              <div class="spinner"></div>
+              <span>Memuat data...</span>
+            </div>
+            <div id="statsContent" class="hidden">
+              <div class="filter-tabs" id="sesiStatsTabs">
+                <button class="filter-tab active" data-sesi="semua">Semua</button>
+                <button class="filter-tab" data-sesi="Pagi">Pagi</button>
+                <button class="filter-tab" data-sesi="Malam">Malam</button>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-card hadir">
+                  <div class="stat-number" id="statHadir">0</div>
+                  <div class="stat-label">Hadir</div>
+                </div>
+                <div class="stat-card izin">
+                  <div class="stat-number" id="statIzin">0</div>
+                  <div class="stat-label">Izin</div>
+                </div>
+                <div class="stat-card sakit">
+                  <div class="stat-number" id="statSakit">0</div>
+                  <div class="stat-label">Sakit</div>
+                </div>
+                <div class="stat-card alfa">
+                  <div class="stat-number" id="statAlfa">0</div>
+                  <div class="stat-label">Alfa</div>
+                </div>
+              </div>
+              
+              <!-- Container untuk grafik berdampingan -->
+              <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center;">
+                <!-- Grafik Donat (Hari ini) -->
+                <div id="chartContainer" class="hidden" style="flex: 1; min-width: 220px; max-width: 300px; margin: 16px auto;">
+                  <canvas id="todayChart"></canvas>
+                </div>
+                <!-- Grafik Bar Admin (Perbandingan Kelas) -->
+                <div id="adminChartContainer" class="hidden" style="flex: 1.5; min-width: 280px; max-width: 400px; margin: 16px auto;">
+                  <canvas id="adminClassChart"></canvas>
+                </div>
+              </div>
+              
+              <div class="date-info" id="presensiInfo">Belum ada presensi hari ini</div>
+            </div>
+          </div>
+
+          <!-- Grafik Mingguan (Kanan) -->
+          <div class="card" id="weeklyCard">
+            <div class="card-title">
+              <span class="icon">&#128202;</span> Grafik Kehadiran 3 Hari Terakhir
+            </div>
+            <div id="weeklyLoading" class="loading">
+              <div class="spinner"></div>
+              <span>Memuat data...</span>
+            </div>
+            <div id="weeklyChartContainer" class="hidden" style="max-width: 100%; margin: 0 auto;">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+            <div id="weeklyEmptyState" class="date-info hidden" style="text-align: center; margin-top: 12px;">
+              Belum ada data presensi 3 hari terakhir
+            </div>
+          </div>
+          
+        </div> <!-- End Dashboard Grid -->
+      </div> <!-- End Container -->
+
+      <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
+    </div> <!-- End Main Content -->
+  </div> <!-- End App Wrapper -->
+
+  <!-- Modal Detail Santri Alfa (Dipindah ke luar app-wrapper agar z-index aman) -->
+  <div id="alfaModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title" id="alfaModalTitle">Santri Tidak Hadir</span>
+        <button class="modal-close" id="closeAlfaBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="alfaModalBody"></div>
     </div>
   </div>
-
-  <!-- Content -->
-  <div class="container">
-    <!-- Statistik Hari Ini -->
-    <div class="card">
-      <div class="card-title">
-        <span class="icon">&#128202;</span> Statistik Hari Ini
-      </div>
-      <div id="statsLoading" class="loading">
-        <div class="spinner"></div>
-        <span>Memuat data...</span>
-      </div>
-      <div id="statsContent" class="hidden">
-        <div class="filter-tabs" id="sesiStatsTabs">
-          <button class="filter-tab active" data-sesi="semua">Semua</button>
-          <button class="filter-tab" data-sesi="Pagi">Pagi</button>
-          <button class="filter-tab" data-sesi="Malam">Malam</button>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card hadir">
-            <div class="stat-number" id="statHadir">0</div>
-            <div class="stat-label">Hadir</div>
-          </div>
-          <div class="stat-card izin">
-            <div class="stat-number" id="statIzin">0</div>
-            <div class="stat-label">Izin</div>
-          </div>
-          <div class="stat-card sakit">
-            <div class="stat-number" id="statSakit">0</div>
-            <div class="stat-label">Sakit</div>
-          </div>
-          <div class="stat-card alfa">
-            <div class="stat-number" id="statAlfa">0</div>
-            <div class="stat-label">Alfa</div>
-          </div>
-        </div>
-        <div id="chartContainer" class="hidden" style="max-width: 280px; margin: 16px auto 16px;">
-          <canvas id="todayChart"></canvas>
-        </div>
-        <div class="date-info" id="presensiInfo">Belum ada presensi hari ini</div>
-      </div>
-    </div>
-
-    <!-- Grafik Mingguan -->
-    <div class="card" id="weeklyCard">
-      <div class="card-title">
-        <span class="icon">&#128202;</span> Grafik Kehadiran 3 Hari Terakhir
-      </div>
-      <div id="weeklyLoading" class="loading">
-        <div class="spinner"></div>
-        <span>Memuat data...</span>
-      </div>
-      <div id="weeklyChartContainer" class="hidden" style="max-width: 100%; margin: 0 auto;">
-        <canvas id="weeklyChart"></canvas>
-      </div>
-      <div id="weeklyEmptyState" class="date-info hidden" style="text-align: center; margin-top: 12px;">
-        Belum ada data presensi 3 hari terakhir
-      </div>
-    </div>
-
-    <!-- Modal Detail Santri Alfa -->
-    <div id="alfaModal" class="modal-overlay hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span class="modal-title" id="alfaModalTitle">Santri Tidak Hadir</span>
-          <button class="modal-close" id="closeAlfaBtn">&times;</button>
-        </div>
-        <div class="modal-body" id="alfaModalBody"></div>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="card">
-      <div class="card-title">
-        <span class="icon">&#9889;</span> Menu Cepat
-      </div>
-      <div class="quick-actions">
-        <a href="presensi.html" class="action-btn btn-presensi">
-          <span class="action-label">Input Presensi</span>
-        </a>
-        <a href="santri.html" class="action-btn">
-          <div class="action-icon">&#128100;</div>
-          <span class="action-label">Data Santri</span>
-        </a>
-        <a href="rekap.html" class="action-btn">
-          <div class="action-icon">&#128203;</div>
-          <span class="action-label">Rekap</span>
-        </a>
-        <a href="libur.html" class="action-btn">
-          <div class="action-icon">&#128197;</div>
-          <span class="action-label">Hari Libur</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item active">
-      <span class="nav-icon">&#127968;</span>
-      <span>Beranda</span>
-    </a>
-    <a href="presensi.html" class="nav-item">
-      <span class="nav-icon">&#9997;</span>
-      <span>Presensi</span>
-    </a>
-    <a href="santri.html" class="nav-item">
-      <span class="nav-icon">&#128100;</span>
-      <span>Santri</span>
-    </a>
-    <a href="rekap.html" class="nav-item">
-      <span class="nav-icon">&#128203;</span>
-      <span>Rekap</span>
-    </a>
-    <a href="libur.html" class="nav-item">
-      <span class="nav-icon">&#128197;</span>
-      <span>Libur</span>
-    </a>
-  </nav>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>

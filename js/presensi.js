@@ -3,13 +3,20 @@
 // ============================================================
 
 let currentSesi = 'Pagi';
-let currentKelas = 'A';
+let currentKelas = CONFIG.KELAS.length > 0 ? CONFIG.KELAS[0] : '';
 let santriList = [];
 let isLibur = false;
 let loadRequestId = 0; // untuk mendeteksi response basi (race condition)
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
+  
+  // Cegah Admin mengakses halaman ini (sesuai permintaan, presensi khusus Ustaz)
+  if (Auth.isAdmin()) {
+    window.location.href = 'dashboard.html';
+    return;
+  }
+  
   initPresensi();
 });
 
@@ -47,27 +54,19 @@ function initPresensi() {
 
   // Setup kelas tabs berdasarkan hak akses
   const allowedKelas = Auth.getAllowedKelas();
-  const kelasTabsContainer = document.getElementById('kelasTabs');
-
+  
   if (allowedKelas !== 'all') {
-    // Jika ustaz, set kelas default ke kelasnya sendiri dan sembunyikan kelas lain
-    currentKelas = allowedKelas;
-    document.querySelectorAll('#kelasTabs .filter-tab').forEach(tab => {
-      if (tab.dataset.kelas === allowedKelas) {
-        tab.classList.add('active');
-      } else {
-        tab.classList.add('hidden'); // Sembunyikan kelas lain
-      }
-    });
+    // Jika ustaz, render tab hanya untuk kelasnya
+    const container = document.getElementById('kelasTabsContainer');
+    if (container) {
+      container.innerHTML = `<button class="filter-tab active" data-kelas="${allowedKelas}">Kelas ${allowedKelas}</button>`;
+      currentKelas = allowedKelas;
+    }
   } else {
-    // Jika admin, biarkan semua kelas diakses
-    document.querySelectorAll('#kelasTabs .filter-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#kelasTabs .filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentKelas = tab.dataset.kelas;
-        loadSantri();
-      });
+    // Jika admin, render semua tab kelas dinamis tanpa tombol "Semua"
+    renderKelasTabs('kelasTabsContainer', false, (kelas) => {
+      currentKelas = kelas;
+      loadSantri();
     });
   }
 

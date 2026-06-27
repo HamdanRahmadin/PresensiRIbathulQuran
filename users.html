@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1B5E20">
+  <title>Kelola Akun - Ribathul Qur'an</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Ribathul Qur'an</h2>
+      <button class="btn-close-sidebar" id="btnCloseSidebar">&times;</button>
+    </div>
+    <div class="sidebar-menu">
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">&#127968;</span>
+        <span>Beranda</span>
+      </a>
+      <a href="presensi.html" class="nav-item">
+        <span class="nav-icon">&#9997;</span>
+        <span>Presensi</span>
+      </a>
+      <a href="santri.html" class="nav-item">
+        <span class="nav-icon">&#128100;</span>
+        <span>Santri</span>
+      </a>
+      <a href="rekap.html" class="nav-item">
+        <span class="nav-icon">&#128203;</span>
+        <span>Rekap</span>
+      </a>
+      <a href="libur.html" class="nav-item">
+        <span class="nav-icon">&#128197;</span>
+        <span>Hari Libur</span>
+      </a>
+      <a href="kelas.html" class="nav-item">
+        <span class="nav-icon">&#127979;</span>
+        <span>Kelola Kelas</span>
+      </a>
+      <a href="users.html" class="nav-item active">
+        <span class="nav-icon">&#128274;</span>
+        <span>Kelola Akun</span>
+      </a>
+    </div>
+  </aside>
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-top">
+          <div class="header-left">
+            <button class="btn-menu" id="btnMenu">&#9776;</button>
+            <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
+            <div style="margin-left: 8px;">
+              <h1>Kelola Akun</h1>
+              <div class="header-subtitle">Kelola akun Admin dan Ustaz</div>
+            </div>
+          </div>
+          <button class="btn-logout">Keluar</button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="container">
+        <!-- Tombol Tambah -->
+        <button class="btn btn-primary mb-2" id="btnAddUser">
+          + Tambah Akun Baru
+        </button>
+
+        <!-- Loading -->
+        <div id="usersLoading" class="loading">
+          <div class="spinner"></div>
+          <span>Memuat data pengguna...</span>
+        </div>
+
+        <!-- Daftar Pengguna -->
+        <div id="usersList"></div>
+      </div> <!-- End Container -->
+
+      <!-- Modal Tambah/Edit User -->
+      <div class="modal-overlay hidden" id="userModal">
+        <div class="modal">
+          <h2 class="modal-title" id="modalTitle">Tambah Akun</h2>
+          <form id="userForm">
+            <div class="form-group">
+              <label for="inputUsername">Username</label>
+              <input type="text" id="inputUsername" class="form-control" placeholder="Masukkan username" required>
+            </div>
+            <div class="form-group" id="passwordGroup">
+              <label for="inputPassword">Password</label>
+              <input type="text" id="inputPassword" class="form-control" placeholder="Kosongkan jika tidak ingin diubah (saat edit)">
+            </div>
+            <div class="form-group">
+              <label for="inputRole">Role</label>
+              <select id="inputRole" class="form-control" required>
+                <option value="ustaz">Ustaz</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="form-group" id="kelasGroup">
+              <label for="inputUserKelas">Hak Akses Kelas</label>
+              <select id="inputUserKelas" class="form-control">
+                <!-- Option kelas dinamis -->
+              </select>
+              <small class="text-muted" style="display:block; margin-top:4px;">*Hanya berlaku untuk role Ustaz</small>
+            </div>
+            <div class="btn-group">
+              <button type="button" class="btn btn-secondary" id="btnCancelUser">Batal</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitUser">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal Konfirmasi Hapus -->
+      <div class="modal-overlay hidden" id="deleteUserModal">
+        <div class="modal">
+          <h2 class="modal-title">Konfirmasi Hapus</h2>
+          <p class="confirm-text">
+            Apakah Anda yakin ingin menghapus akun <span class="confirm-highlight" id="deleteUsername"></span>?
+          </p>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btnCancelDeleteUser">Batal</button>
+            <button class="btn btn-danger" id="btnConfirmDeleteUser">Hapus</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
+    </div> <!-- End Main Content -->
+  </div> <!-- End App Wrapper -->
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/users.js"></script>
+</body>
+</html>

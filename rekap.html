@@ -9,117 +9,137 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
-      <div>
-        <h1>Rekap - Ribathul Qur'an</h1>
-        <div class="header-subtitle">Laporan presensi santri</div>
-      </div>
-      <button class="btn-logout">Keluar</button>
-    </div>
-  </div>
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Content -->
-  <div class="container">
-    <!-- Filter -->
-    <div class="card">
-      <div class="card-title">
-        <span class="icon">&#128269;</span> Filter
-      </div>
-      <div class="form-group">
-        <label for="tglMulai">Dari Tanggal</label>
-        <input type="date" id="tglMulai" class="form-control">
-      </div>
-      <div class="form-group">
-        <label for="tglAkhir">Sampai Tanggal</label>
-        <input type="date" id="tglAkhir" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Kelas</label>
-        <div class="filter-tabs" id="kelasFilter">
-          <button class="filter-tab active" data-kelas="semua">Semua</button>
-          <button class="filter-tab" data-kelas="A">Kelas A</button>
-          <button class="filter-tab" data-kelas="B">Kelas B</button>
-          <button class="filter-tab" data-kelas="C">Kelas C</button>
-          <button class="filter-tab" data-kelas="D">Kelas D</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="filterNama">Cari Nama</label>
-        <input type="text" id="filterNama" class="form-control" placeholder="Ketik nama santri...">
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-primary" id="btnShowRekap">
-          Tampilkan Rekap
-        </button>
-        <button class="btn btn-secondary hidden" id="btnExport">
-          &#128190; Export Excel
-        </button>
-      </div>
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Ribathul Qur'an</h2>
+      <button class="btn-close-sidebar" id="btnCloseSidebar">&times;</button>
     </div>
-
-    <!-- Statistik Ringkasan -->
-    <div id="rekapStats" class="hidden">
-      <div class="stats-grid mb-2">
-        <div class="stat-card hadir">
-          <div class="stat-number" id="rStatHadir">0</div>
-          <div class="stat-label">Hadir</div>
-        </div>
-        <div class="stat-card izin">
-          <div class="stat-number" id="rStatIzin">0</div>
-          <div class="stat-label">Izin</div>
-        </div>
-        <div class="stat-card sakit">
-          <div class="stat-number" id="rStatSakit">0</div>
-          <div class="stat-label">Sakit</div>
-        </div>
-        <div class="stat-card alfa">
-          <div class="stat-number" id="rStatAlfa">0</div>
-          <div class="stat-label">Alfa</div>
+    <div class="sidebar-menu">
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">&#127968;</span>
+        <span>Beranda</span>
+      </a>
+      <a href="presensi.html" class="nav-item">
+        <span class="nav-icon">&#9997;</span>
+        <span>Presensi</span>
+      </a>
+      <a href="santri.html" class="nav-item">
+        <span class="nav-icon">&#128100;</span>
+        <span>Santri</span>
+      </a>
+      <a href="rekap.html" class="nav-item active">
+        <span class="nav-icon">&#128203;</span>
+        <span>Rekap</span>
+      </a>
+      <a href="libur.html" class="nav-item">
+        <span class="nav-icon">&#128197;</span>
+        <span>Hari Libur</span>
+      </a>
+      <a href="kelas.html" class="nav-item">
+        <span class="nav-icon">&#127979;</span>
+        <span>Kelola Kelas</span>
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon">&#128274;</span>
+        <span>Kelola Akun</span>
+      </a>
+    </div>
+  </aside>
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-top">
+          <div class="header-left">
+            <button class="btn-menu" id="btnMenu">&#9776;</button>
+            <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
+            <div style="margin-left: 8px;">
+              <h1>Rekap</h1>
+              <div class="header-subtitle">Laporan presensi santri</div>
+            </div>
+          </div>
+          <button class="btn-logout">Keluar</button>
         </div>
       </div>
-    </div>
 
-    <!-- Loading -->
-    <div id="rekapLoading" class="loading hidden">
-      <div class="spinner"></div>
-      <span>Memuat rekap...</span>
-    </div>
+      <!-- Content -->
+      <div class="container">
+        <!-- Filter -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">&#128269;</span> Filter
+          </div>
+          <div class="form-group">
+            <label for="tglMulai">Dari Tanggal</label>
+            <input type="date" id="tglMulai" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="tglAkhir">Sampai Tanggal</label>
+            <input type="date" id="tglAkhir" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Kelas</label>
+            <div class="filter-tabs" id="kelasTabsContainer">
+              <!-- Render Dinamis -->
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filterNama">Cari Nama</label>
+            <input type="text" id="filterNama" class="form-control" placeholder="Ketik nama santri...">
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btnShowRekap">
+              Tampilkan Rekap
+            </button>
+            <button class="btn btn-secondary hidden" id="btnExport">
+              &#128190; Export Excel
+            </button>
+          </div>
+        </div>
 
-    <!-- Tabel Rekap -->
-    <div id="rekapContent"></div>
-  </div>
+        <!-- Statistik Ringkasan -->
+        <div id="rekapStats" class="hidden">
+          <div class="stats-grid mb-2">
+            <div class="stat-card hadir">
+              <div class="stat-number" id="rStatHadir">0</div>
+              <div class="stat-label">Hadir</div>
+            </div>
+            <div class="stat-card izin">
+              <div class="stat-number" id="rStatIzin">0</div>
+              <div class="stat-label">Izin</div>
+            </div>
+            <div class="stat-card sakit">
+              <div class="stat-number" id="rStatSakit">0</div>
+              <div class="stat-label">Sakit</div>
+            </div>
+            <div class="stat-card alfa">
+              <div class="stat-number" id="rStatAlfa">0</div>
+              <div class="stat-label">Alfa</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="rekapLoading" class="loading hidden">
+          <div class="spinner"></div>
+          <span>Memuat rekap...</span>
+        </div>
+
+        <!-- Tabel Rekap -->
+        <div id="rekapContent"></div>
+      </div> <!-- End Container -->
+      
+      <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
+    </div> <!-- End Main Content -->
+  </div> <!-- End App Wrapper -->
 
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer">  </div>
-
-  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-      <span class="nav-icon">&#127968;</span>
-      <span>Beranda</span>
-    </a>
-    <a href="presensi.html" class="nav-item">
-      <span class="nav-icon">&#9997;</span>
-      <span>Presensi</span>
-    </a>
-    <a href="santri.html" class="nav-item">
-      <span class="nav-icon">&#128100;</span>
-      <span>Santri</span>
-    </a>
-    <a href="rekap.html" class="nav-item active">
-      <span class="nav-icon">&#128203;</span>
-      <span>Rekap</span>
-    </a>
-    <a href="libur.html" class="nav-item">
-      <span class="nav-icon">&#128197;</span>
-      <span>Libur</span>
-    </a>
-  </nav>
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>

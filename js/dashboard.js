@@ -3,6 +3,7 @@
 // ============================================================
 
 let todayChartInstance = null;
+let adminChartInstance = null;
 let weeklyChartInstance = null;
 let allTodayData = []; // cache data statistik hari ini (setelah filter kelas)
 
@@ -89,11 +90,18 @@ function renderTodayBySesi(sesi) {
     document.getElementById('chartContainer').classList.remove('hidden');
     renderTodayChart(stats);
 
+    // Jika yang login Admin, render juga grafik perbandingan kelas
+    if (Auth.isAdmin()) {
+      document.getElementById('adminChartContainer').classList.remove('hidden');
+      renderAdminClassChart(data);
+    }
+
   } else {
     const kelasSuffix = Auth.getAllowedKelas() !== 'all' ? ` di Kelas ${Auth.getAllowedKelas()}` : '';
     const sesiSuffix = sesi !== 'semua' ? ` (Sesi ${sesi})` : '';
     document.getElementById('presensiInfo').textContent = `Belum ada presensi${sesiSuffix}${kelasSuffix}`;
     document.getElementById('chartContainer').classList.add('hidden');
+    document.getElementById('adminChartContainer').classList.add('hidden');
   }
 }
 
@@ -152,6 +160,91 @@ function renderTodayChart(stats) {
         }
       },
       cutout: '60%'
+    }
+  });
+}
+
+/**
+ * Render Bar Chart untuk membandingkan kehadiran antar kelas (Admin Only)
+ */
+function renderAdminClassChart(data) {
+  const ctx = document.getElementById('adminClassChart').getContext('2d');
+
+  if (adminChartInstance) {
+    adminChartInstance.destroy();
+  }
+
+  // Hitung persentase kehadiran tiap kelas (Hadir+Izin+Sakit vs Total)
+  const classStats = {};
+  
+  // Inisialisasi dari CONFIG.KELAS
+  CONFIG.KELAS.forEach(k => {
+    classStats[k] = { present: 0, total: 0 };
+  });
+
+  data.forEach(item => {
+    if (!classStats[item.kelas]) {
+      classStats[item.kelas] = { present: 0, total: 0 };
+    }
+    classStats[item.kelas].total++;
+    if (['Hadir', 'Izin', 'Sakit'].includes(item.status)) {
+      classStats[item.kelas].present++;
+    }
+  });
+
+  // Filter kelas yang ada datanya saja
+  const labels = [];
+  const percentages = [];
+
+  Object.keys(classStats).forEach(kelas => {
+    if (classStats[kelas].total > 0) {
+      labels.push(`Kelas ${kelas}`);
+      const pct = Math.round((classStats[kelas].present / classStats[kelas].total) * 100);
+      percentages.push(pct);
+    }
+  });
+
+  // Jika belum ada data per kelas sama sekali, jangan render
+  if (labels.length === 0) {
+    document.getElementById('adminChartContainer').classList.add('hidden');
+    return;
+  }
+
+  adminChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Kehadiran (%)',
+        data: percentages,
+        backgroundColor: '#4CAF50',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'Perbandingan Kelas',
+          font: { family: 'Segoe UI', size: 14 }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return ` ${context.raw}% Hadir`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 20 }
+        }
+      }
     }
   });
 }

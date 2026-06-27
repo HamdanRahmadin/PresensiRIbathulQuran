@@ -9,97 +9,118 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
-      <div>
-        <h1>Presensi Ribathul Qur'an</h1>
-        <div class="header-subtitle" id="headerDate"></div>
-      </div>
-      <button class="btn-logout">Keluar</button>
-    </div>
-  </div>
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Content -->
-  <div class="container">
-    <!-- Libur Banner (akan muncul jika hari libur) -->
-    <div id="liburBanner" class="libur-banner hidden">
-      <div class="libur-icon">&#128164;</div>
-      <div id="liburText">Hari ini libur</div>
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Ribathul Qur'an</h2>
+      <button class="btn-close-sidebar" id="btnCloseSidebar">&times;</button>
     </div>
-
-    <!-- Form Filter -->
-    <div class="card" id="filterCard">
-      <div class="card-title">
-        <span class="icon">&#128197;</span> Pilih Tanggal & Sesi
-      </div>
-      <div class="form-group">
-        <label for="tanggal">Tanggal</label>
-        <input type="date" id="tanggal" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Sesi</label>
-        <div class="filter-tabs" id="sesiTabs">
-          <button class="filter-tab active" data-sesi="Pagi">Pagi</button>
-          <button class="filter-tab" data-sesi="Malam">Malam</button>
+    <div class="sidebar-menu">
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-icon">&#127968;</span>
+        <span>Beranda</span>
+      </a>
+      <a href="presensi.html" class="nav-item active">
+        <span class="nav-icon">&#9997;</span>
+        <span>Presensi</span>
+      </a>
+      <a href="santri.html" class="nav-item">
+        <span class="nav-icon">&#128100;</span>
+        <span>Santri</span>
+      </a>
+      <a href="rekap.html" class="nav-item">
+        <span class="nav-icon">&#128203;</span>
+        <span>Rekap</span>
+      </a>
+      <a href="libur.html" class="nav-item">
+        <span class="nav-icon">&#128197;</span>
+        <span>Hari Libur</span>
+      </a>
+      <a href="kelas.html" class="nav-item">
+        <span class="nav-icon">&#127979;</span>
+        <span>Kelola Kelas</span>
+      </a>
+      <a href="users.html" class="nav-item">
+        <span class="nav-icon">&#128274;</span>
+        <span>Kelola Akun</span>
+      </a>
+    </div>
+  </aside>
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-top">
+          <div class="header-left">
+            <button class="btn-menu" id="btnMenu">&#9776;</button>
+            <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
+            <div style="margin-left: 8px;">
+              <h1>Presensi</h1>
+              <div class="header-subtitle" id="headerDate"></div>
+            </div>
+          </div>
+          <button class="btn-logout">Keluar</button>
         </div>
       </div>
-      <div class="form-group">
-        <label>Kelas</label>
-        <div class="filter-tabs" id="kelasTabs">
-          <button class="filter-tab active" data-kelas="A">Kelas A</button>
-          <button class="filter-tab" data-kelas="B">Kelas B</button>
-          <button class="filter-tab" data-kelas="C">Kelas C</button>
-          <button class="filter-tab" data-kelas="D">Kelas D</button>
+
+      <!-- Content -->
+      <div class="container">
+        <!-- Libur Banner (akan muncul jika hari libur) -->
+        <div id="liburBanner" class="libur-banner hidden">
+          <div class="libur-icon">&#128164;</div>
+          <div id="liburText">Hari ini libur</div>
         </div>
-      </div>
-    </div>
 
-    <!-- Daftar Presensi -->
-    <div id="presensiLoading" class="loading hidden">
-      <div class="spinner"></div>
-      <span>Memuat data santri...</span>
-    </div>
+        <!-- Form Filter -->
+        <div class="card" id="filterCard">
+          <div class="card-title">
+            <span class="icon">&#128197;</span> Pilih Tanggal & Sesi
+          </div>
+          <div class="form-group">
+            <label for="tanggal">Tanggal</label>
+            <input type="date" id="tanggal" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Sesi</label>
+            <div class="filter-tabs" id="sesiTabs">
+              <button class="filter-tab active" data-sesi="Pagi">Pagi</button>
+              <button class="filter-tab" data-sesi="Malam">Malam</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Kelas</label>
+            <div class="filter-tabs" id="kelasTabsContainer">
+              <!-- Render Dinamis -->
+            </div>
+          </div>
+        </div>
 
-    <div id="presensiList" class="presensi-list"></div>
+        <!-- Daftar Presensi -->
+        <div id="presensiLoading" class="loading hidden">
+          <div class="spinner"></div>
+          <span>Memuat data santri...</span>
+        </div>
 
-    <!-- Tombol Simpan -->
-    <div id="saveSection" class="mt-2 hidden">
-      <button class="btn btn-primary" id="btnSave">
-        Simpan Presensi
-      </button>
-    </div>
-  </div>
+        <div id="presensiList" class="presensi-list"></div>
+
+        <!-- Tombol Simpan -->
+        <div id="saveSection" class="mt-2 hidden" style="position: sticky; bottom: 16px; margin-top: 24px; z-index: 50;">
+          <button class="btn btn-primary" id="btnSave" style="box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            Simpan Presensi
+          </button>
+        </div>
+      </div> <!-- End Container -->
+
+      <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
+    </div> <!-- End Main Content -->
+  </div> <!-- End App Wrapper -->
 
   <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer">  </div>
-
-  <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-      <span class="nav-icon">&#127968;</span>
-      <span>Beranda</span>
-    </a>
-    <a href="presensi.html" class="nav-item active">
-      <span class="nav-icon">&#9997;</span>
-      <span>Presensi</span>
-    </a>
-    <a href="santri.html" class="nav-item">
-      <span class="nav-icon">&#128100;</span>
-      <span>Santri</span>
-    </a>
-    <a href="rekap.html" class="nav-item">
-      <span class="nav-icon">&#128203;</span>
-      <span>Rekap</span>
-    </a>
-    <a href="libur.html" class="nav-item">
-      <span class="nav-icon">&#128197;</span>
-      <span>Libur</span>
-    </a>
-  </nav>
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>

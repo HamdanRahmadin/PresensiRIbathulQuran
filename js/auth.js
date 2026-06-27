@@ -52,33 +52,35 @@ const Auth = {
     return user.kelas || ''; // 'A', 'B', 'C', atau 'D'
   },
 
-  // Sembunyikan menu admin jika user adalah ustaz
+  // Sembunyikan menu berdasarkan role
   initUI() {
-    if (this.isLoggedIn() && !this.isAdmin()) {
-      // Sembunyikan seluruh bottom-nav
-      const bottomNav = document.querySelector('.bottom-nav');
-      if (bottomNav) bottomNav.classList.add('hidden');
+    if (!this.isLoggedIn()) return;
 
-      // Sembunyikan judul "Menu Cepat" di dashboard
-      document.querySelectorAll('.card-title').forEach(el => {
-        if (el.textContent.includes('Menu Cepat')) {
-          el.classList.add('hidden');
-        }
+    if (this.isAdmin()) {
+      // --- AKSI UNTUK ADMIN ---
+      
+      // 1. Sembunyikan tombol kembali (btn-back) di semua halaman
+      document.querySelectorAll('.btn-back').forEach(btn => {
+        btn.classList.add('hidden');
       });
 
-      // Sembunyikan tombol Santri, Rekap, Libur di quick-actions
+      // 2. Sembunyikan menu Input Presensi di sidebar
+      const presensiMenu = document.querySelector('.sidebar-menu a[href="presensi.html"]');
+      if (presensiMenu) presensiMenu.classList.add('hidden');
+      
+    } else {
+      // --- AKSI UNTUK USTAZ ---
+      
+      // Sembunyikan menu Admin (Santri, Rekap, Libur, Kelas, User) di sidebar
       document.querySelectorAll(
-        'a[href="santri.html"], a[href="rekap.html"], a[href="libur.html"]'
+        '.sidebar-menu a[href="santri.html"], ' +
+        '.sidebar-menu a[href="rekap.html"], ' +
+        '.sidebar-menu a[href="libur.html"], ' +
+        '.sidebar-menu a[href="kelas.html"], ' +
+        '.sidebar-menu a[href="users.html"]'
       ).forEach(el => {
         el.classList.add('hidden');
       });
-
-      // Tengahkan tombol Presensi yang tersisa
-      const qa = document.querySelector('.quick-actions');
-      if (qa) {
-        qa.style.display = 'flex';
-        qa.style.justifyContent = 'center';
-      }
     }
   }
 };

@@ -27,15 +27,12 @@ function initSantri() {
     });
   }
 
-  // Setup filter tabs
-  document.querySelectorAll('.filter-tabs .filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tabs .filter-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentFilter = tab.dataset.kelas;
-      loadSantri();
-    });
+  // Render tab kelas dinamis dan select options
+  renderKelasTabs('kelasTabsContainer', true, (kelas) => {
+    currentFilter = kelas;
+    loadSantri();
   });
+  renderKelasOptions('inputKelas');
 
   // Setup click listeners
   const btnAddSantri = document.getElementById('btnAddSantri');
@@ -138,7 +135,9 @@ function showAddModal() {
   editMode = false;
   document.getElementById('modalTitle').textContent = 'Tambah Santri';
   document.getElementById('inputNama').value = '';
-  document.getElementById('inputKelas').value = 'A';
+  if (CONFIG.KELAS.length > 0) {
+    document.getElementById('inputKelas').value = CONFIG.KELAS[0];
+  }
   document.getElementById('btnSubmit').textContent = 'Simpan';
   document.getElementById('santriModal').classList.remove('hidden');
 }

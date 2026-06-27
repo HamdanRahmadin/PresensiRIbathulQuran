@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1B5E20">
-  <title>Data Santri - Ribathul Qur'an</title>
+  <title>Kelola Kelas - Ribathul Qur'an</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -28,7 +28,7 @@
         <span class="nav-icon">&#9997;</span>
         <span>Presensi</span>
       </a>
-      <a href="santri.html" class="nav-item active">
+      <a href="santri.html" class="nav-item">
         <span class="nav-icon">&#128100;</span>
         <span>Santri</span>
       </a>
@@ -40,7 +40,7 @@
         <span class="nav-icon">&#128197;</span>
         <span>Hari Libur</span>
       </a>
-      <a href="kelas.html" class="nav-item">
+      <a href="kelas.html" class="nav-item active">
         <span class="nav-icon">&#127979;</span>
         <span>Kelola Kelas</span>
       </a>
@@ -59,8 +59,8 @@
             <button class="btn-menu" id="btnMenu">&#9776;</button>
             <button class="btn-back" id="btnBack" title="Kembali ke Dashboard">&#8592;</button>
             <div style="margin-left: 8px;">
-              <h1>Data Santri</h1>
-              <div class="header-subtitle">Kelola data santri pondok pesantren</div>
+              <h1>Kelola Kelas</h1>
+              <div class="header-subtitle">Tambah dan hapus daftar kelas</div>
             </div>
           </div>
           <button class="btn-logout">Keluar</button>
@@ -69,79 +69,62 @@
 
       <!-- Content -->
       <div class="container">
-        <!-- Filter Kelas -->
-        <div class="filter-tabs mb-2" id="kelasTabsContainer">
-          <!-- Tombol tab kelas akan dirender secara dinamis lewat JS -->
+        <!-- Form Tambah Kelas -->
+        <div class="card mb-3">
+          <div class="card-title">
+            <span class="icon">&#10133;</span> Tambah Kelas Baru
+          </div>
+          <form id="kelasForm">
+            <div class="form-group mb-2">
+              <label for="inputNamaKelas">Nama Kelas</label>
+              <input type="text" id="inputNamaKelas" class="form-control" placeholder="Contoh: E, F, Spesial..." required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnAddKelas">
+              Simpan Kelas
+            </button>
+          </form>
         </div>
 
-        <!-- Tombol Tambah -->
-        <button class="btn btn-primary mb-2" id="btnAddSantri">
-          + Tambah Santri
-        </button>
+        <!-- Daftar Kelas -->
+        <div class="card-title mb-2">
+          <span class="icon">&#127979;</span> Daftar Kelas Aktif
+        </div>
 
-        <!-- Jumlah Santri -->
-        <div class="date-info" id="santriCount">Memuat data...</div>
-
-        <!-- Loading -->
-        <div id="santriLoading" class="loading">
+        <div id="kelasLoading" class="loading">
           <div class="spinner"></div>
-          <span>Memuat data santri...</span>
+          <span>Memuat data kelas...</span>
         </div>
 
-        <!-- Daftar Santri -->
-        <div id="santriList"></div>
+        <div id="kelasList" class="presensi-list"></div>
+      </div> <!-- End Container -->
+
+      <!-- Modal Konfirmasi Hapus -->
+      <div class="modal-overlay hidden" id="deleteKelasModal">
+        <div class="modal">
+          <h2 class="modal-title">Konfirmasi Hapus Kelas</h2>
+          <p class="confirm-text">
+            Apakah Anda yakin ingin menghapus kelas <span class="confirm-highlight" id="deleteKelasName"></span>?
+            <br><br>
+            <strong>Peringatan:</strong> Kelas hanya bisa dihapus jika tidak ada santri di dalamnya.
+          </p>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btnCancelDeleteKelas">Batal</button>
+            <button class="btn btn-danger" id="btnConfirmDeleteKelas">Hapus</button>
+          </div>
+        </div>
       </div>
       
       <div class="footer-copyright">© 2026 Ribathul Qur'an</div>
     </div> <!-- End Main Content -->
   </div> <!-- End App Wrapper -->
 
-  <!-- Modal Tambah/Edit -->
-  <div class="modal-overlay hidden" id="santriModal">
-    <div class="modal">
-      <h2 class="modal-title" id="modalTitle">Tambah Santri</h2>
-      <form id="santriForm">
-        <div class="form-group">
-          <label for="inputNama">Nama Santri</label>
-          <input type="text" id="inputNama" class="form-control" placeholder="Masukkan nama santri" required>
-        </div>
-        <div class="form-group">
-          <label for="inputKelas">Kelas</label>
-          <select id="inputKelas" class="form-control" required>
-            <!-- Option akan dirender dinamis -->
-          </select>
-        </div>
-        <div class="btn-group">
-          <button type="button" class="btn btn-secondary" id="btnCancelAdd">Batal</button>
-          <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Konfirmasi Hapus -->
-  <div class="modal-overlay hidden" id="deleteModal">
-    <div class="modal">
-      <h2 class="modal-title">Konfirmasi Hapus</h2>
-      <p class="confirm-text">
-        Apakah Anda yakin ingin menghapus santri <span class="confirm-highlight" id="deleteNama"></span>?
-        <br><br>
-        Data presensi santri ini <strong>tidak akan</strong> ikut terhapus.
-      </p>
-      <div class="btn-group">
-        <button class="btn btn-secondary" id="btnCancelDelete">Batal</button>
-        <button class="btn btn-danger" id="btnDelete">Hapus</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer">  </div>
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/utils.js"></script>
-  <script src="js/santri.js"></script>
+  <script src="js/kelas.js"></script>
 </body>
 </html>

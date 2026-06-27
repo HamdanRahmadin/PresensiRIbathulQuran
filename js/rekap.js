@@ -31,12 +31,8 @@ function initRekap() {
   document.getElementById('tglAkhir').value = formatDate(today);
 
   // Setup kelas filter untuk admin
-  document.querySelectorAll('#kelasFilter .filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('#kelasFilter .filter-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      rekapKelas = tab.dataset.kelas;
-    });
+  renderKelasTabs('kelasTabsContainer', true, (kelas) => {
+    rekapKelas = kelas;
   });
 
   // Setup click listeners
@@ -252,28 +248,27 @@ function exportToExcel() {
 
   const tglMulai = document.getElementById('tglMulai').value;
   const tglAkhir = document.getElementById('tglAkhir').value;
-
-  // Format data untuk Excel
-  const excelRows = currentRekapData.map((r, index) => {
-    return {
-      'No': index + 1,
-      'Nama Santri': r.nama,
-      'Kelas': r.kelas,
-      'Total Sesi': r.totalSesi,
-      'Hadir': r.hadir,
-      'Izin': r.izin,
-      'Sakit': r.sakit,
-      'Alfa': r.alfa,
-      'Total Hadir': r.totalHadir,
-      'Persentase Kehadiran (%)': r.persentase
-    };
-  });
-
-  // Buat workbook & worksheet
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(excelRows);
 
-  // Set lebar kolom agar rapi
+  // Helper function untuk format row
+  const formatRows = (dataArr) => {
+    return dataArr.map((r, index) => {
+      return {
+        'No': index + 1,
+        'Nama Santri': r.nama,
+        'Kelas': r.kelas,
+        'Total Sesi': r.totalSesi,
+        'Hadir': r.hadir,
+        'Izin': r.izin,
+        'Sakit': r.sakit,
+        'Alfa': r.alfa,
+        'Total Hadir': r.totalHadir,
+        'Persentase Kehadiran (%)': r.persentase
+      };
+    });
+  };
+
+  // Helper function untuk styling kolom
   const wscols = [
     { wch: 5 },  // No
     { wch: 30 }, // Nama
@@ -286,10 +281,32 @@ function exportToExcel() {
     { wch: 15 }, // Total Hadir
     { wch: 22 }  // Persentase
   ];
-  ws['!cols'] = wscols;
 
-  // Tambahkan worksheet ke workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
+  if (rekapKelas === 'semua') {
+    // Jika semua kelas, pisahkan ke dalam multi-sheet berdasarkan CONFIG.KELAS
+    CONFIG.KELAS.forEach(k => {
+      const dataKelas = currentRekapData.filter(r => r.kelas === k);
+      if (dataKelas.length > 0) {
+        const ws = XLSX.utils.json_to_sheet(formatRows(dataKelas));
+        ws['!cols'] = wscols;
+        XLSX.utils.book_append_sheet(wb, ws, `Kelas ${k}`);
+      }
+    });
+    
+    // Tambah sheet untuk data yang kelasnya tidak ada di CONFIG (jika ada)
+    const dataLain = currentRekapData.filter(r => !CONFIG.KELAS.includes(r.kelas));
+    if (dataLain.length > 0) {
+      const ws = XLSX.utils.json_to_sheet(formatRows(dataLain));
+      ws['!cols'] = wscols;
+      XLSX.utils.book_append_sheet(wb, ws, 'Lainnya');
+    }
+
+  } else {
+    // Jika hanya satu kelas, buat satu sheet saja
+    const ws = XLSX.utils.json_to_sheet(formatRows(currentRekapData));
+    ws['!cols'] = wscols;
+    XLSX.utils.book_append_sheet(wb, ws, `Kelas ${rekapKelas}`);
+  }
 
   // Nama file: Rekap_Presensi_YYYYMMDD_to_YYYYMMDD.xlsx
   const filename = `Rekap_Presensi_${tglMulai.replace(/-/g, '')}_ke_${tglAkhir.replace(/-/g, '')}.xlsx`;
