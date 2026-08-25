@@ -1,4 +1,4 @@
-const CACHE_NAME = 'presensi-rq-v1';
+const CACHE_NAME = 'presensi-rq-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -18,7 +18,7 @@ const ASSETS = [
   './js/rekap.js',
   './js/libur.js',
   './manifest.json',
-  './LOGO HUFFADHKRAPYAK 2018.jpg',
+  './logo.jpg',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
