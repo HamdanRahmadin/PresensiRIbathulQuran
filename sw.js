@@ -1,4 +1,4 @@
-const CACHE_NAME = 'presensi-rq-v2';
+const CACHE_NAME = 'presensi-rq-v3';
 const ASSETS = [
   './',
   './index.html',
